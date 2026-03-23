@@ -86,41 +86,56 @@
                                     StrokeShape="RoundRectangle 12"
                                     Padding="16"
                                     Margin="0,0,0,8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <VerticalStackLayout>
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto">
                                         <Label Text="{Binding Title}"
                                                FontSize="16"
                                                FontAttributes="Bold"
-                                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
-                                            <HorizontalStackLayout Spacing="4">
-                                                <Label Text="📅" FontSize="12" />
-                                                <Label Text="{Binding DateDisplay}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
-                                            </HorizontalStackLayout>
-                                            <HorizontalStackLayout Spacing="4">
-                                                <Label Text="🐟" FontSize="12" />
-                                                <Label Text="{Binding FishSummary}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
-                                            </HorizontalStackLayout>
+                                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                               VerticalOptions="Center" />
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                                            <Button Text="🎯"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=OpenLocationInMapsCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                                    WidthRequest="36"
+                                                    HeightRequest="36"
+                                                    CornerRadius="8"
+                                                    Padding="0"
+                                                    IsVisible="{Binding HasLocation}" />
+                                            <Button Text="✏️"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=EditEntryCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                                    WidthRequest="36"
+                                                    HeightRequest="36"
+                                                    CornerRadius="8"
+                                                    Padding="0" />
+                                            <Button Text="🗑️"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=DeleteEntryCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                                    WidthRequest="36"
+                                                    HeightRequest="36"
+                                                    CornerRadius="8"
+                                                    Padding="0" />
                                         </HorizontalStackLayout>
-                                    </VerticalStackLayout>
-
-                                    <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
-                                        <Button Text="✏️"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=EditEntryCommand}"
-                                                CommandParameter="{Binding}"
-                                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
-                                                WidthRequest="44"
-                                                HeightRequest="44"
-                                                CornerRadius="8" />
-                                        <Button Text="🗑️"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=DeleteEntryCommand}"
-                                                CommandParameter="{Binding}"
-                                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
-                                                WidthRequest="44"
-                                                HeightRequest="44"
-                                                CornerRadius="8" />
+                                    </Grid>
+                                    <HorizontalStackLayout Spacing="12">
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="📅" FontSize="11" />
+                                            <Label Text="{Binding DateDisplay}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="🐟" FontSize="11" />
+                                            <Label Text="{Binding FishSummary}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="4" IsVisible="{Binding HasLocation}">
+                                            <Label Text="📍" FontSize="11" />
+                                            <Label Text="Sačuvano" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                                        </HorizontalStackLayout>
                                     </HorizontalStackLayout>
-                                </Grid>
+                                </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -206,6 +221,46 @@
                                         PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
                                         TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                         BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Location -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Lokacija" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding EditorLocationName}"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding EditorHasLocation}" />
+                                    <Label Text="Lokacija nije postavljena"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding EditorHasLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                                    <Button Grid.Column="1"
+                                            Text="📍"
+                                            Command="{Binding GetCurrentLocationCommand}"
+                                            BackgroundColor="#1B5E20"
+                                            TextColor="White"
+                                            WidthRequest="44"
+                                            HeightRequest="44"
+                                            CornerRadius="8"
+                                            IsVisible="{Binding IsGettingLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                                    <ActivityIndicator Grid.Column="1"
+                                                       IsRunning="{Binding IsGettingLocation}"
+                                                       IsVisible="{Binding IsGettingLocation}"
+                                                       Color="#1B5E20"
+                                                       WidthRequest="44"
+                                                       HeightRequest="44" />
+                                    <Button Grid.Column="2"
+                                            Text="✕"
+                                            Command="{Binding ClearEditorLocationCommand}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            IsVisible="{Binding EditorHasLocation}" />
+                                </Grid>
                             </Border>
                         </VerticalStackLayout>
 

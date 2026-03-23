@@ -472,6 +472,50 @@
                             </Border>
                         </VerticalStackLayout>
 
+                        <!-- Location -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Lokacija" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding DiaryLocationName}"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                           FontSize="13"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding DiaryHasLocation}" />
+                                    <Label Text="Lokacija nije postavljena"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           FontSize="13"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding DiaryHasLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                                    <Button Grid.Column="1"
+                                            Text="📍"
+                                            Command="{Binding GetCurrentLocationCommand}"
+                                            BackgroundColor="#1B5E20"
+                                            TextColor="White"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            CornerRadius="8"
+                                            FontSize="16"
+                                            IsVisible="{Binding IsGettingLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                                    <ActivityIndicator Grid.Column="1"
+                                                       IsRunning="{Binding IsGettingLocation}"
+                                                       IsVisible="{Binding IsGettingLocation}"
+                                                       Color="#1B5E20"
+                                                       WidthRequest="40"
+                                                       HeightRequest="40" />
+                                    <Button Grid.Column="2"
+                                            Text="✕"
+                                            Command="{Binding ClearDiaryLocationCommand}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                            WidthRequest="36"
+                                            HeightRequest="36"
+                                            FontSize="12"
+                                            IsVisible="{Binding DiaryHasLocation}" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
                         <!-- Add fish -->
                         <VerticalStackLayout Spacing="6">
                             <Label Text="Dodaj ulov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />

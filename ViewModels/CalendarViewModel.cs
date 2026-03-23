@@ -260,6 +260,22 @@ public partial class CalendarViewModel : BaseViewModel
     [ObservableProperty]
     private ObservableCollection<string> _filteredFishTypes = [];
 
+    // Location
+    [ObservableProperty]
+    private string _diaryLocationName = string.Empty;
+
+    [ObservableProperty]
+    private double? _diaryLatitude;
+
+    [ObservableProperty]
+    private double? _diaryLongitude;
+
+    [ObservableProperty]
+    private bool _diaryHasLocation;
+
+    [ObservableProperty]
+    private bool _isGettingLocation;
+
     // City display
     [ObservableProperty]
     private string _selectedCityName = string.Empty;
@@ -493,6 +509,10 @@ public partial class CalendarViewModel : BaseViewModel
         DiaryCaughtFish.Clear();
         SelectedFishType = null;
         FishQuantity = string.Empty;
+        DiaryLocationName = string.Empty;
+        DiaryLatitude = null;
+        DiaryLongitude = null;
+        DiaryHasLocation = false;
         IsDiaryEditorOpen = true;
     }
 
@@ -532,7 +552,10 @@ public partial class CalendarViewModel : BaseViewModel
             Date = DiaryDate,
             Title = DiaryTitle.Trim(),
             Notes = DiaryNotes,
-            CaughtFish = DiaryCaughtFish.Select(f => f.ToModel()).ToList()
+            CaughtFish = DiaryCaughtFish.Select(f => f.ToModel()).ToList(),
+            Latitude = DiaryLatitude,
+            Longitude = DiaryLongitude,
+            LocationName = string.IsNullOrWhiteSpace(DiaryLocationName) ? null : DiaryLocationName
         };
 
         await _diaryService.AddEntryAsync(entry);
@@ -547,6 +570,60 @@ public partial class CalendarViewModel : BaseViewModel
     private void CancelDiaryEditor()
     {
         IsDiaryEditorOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task GetCurrentLocationAsync()
+    {
+        if (IsGettingLocation) return;
+
+        try
+        {
+            IsGettingLocation = true;
+
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await Shell.Current.DisplayAlert("Lokacija", "Potrebna je dozvola za pristup lokaciji.", "OK");
+                    return;
+                }
+            }
+
+            var location = await Geolocation.GetLocationAsync(new GeolocationRequest
+            {
+                DesiredAccuracy = GeolocationAccuracy.Medium,
+                Timeout = TimeSpan.FromSeconds(15)
+            });
+
+            if (location != null)
+            {
+                DiaryLatitude = location.Latitude;
+                DiaryLongitude = location.Longitude;
+                DiaryHasLocation = true;
+                DiaryLocationName = $"{location.Latitude:F4}, {location.Longitude:F4}";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Location error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Greška", "Nije moguće dobiti lokaciju.", "OK");
+        }
+        finally
+        {
+            IsGettingLocation = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearDiaryLocation()
+    {
+        DiaryLatitude = null;
+        DiaryLongitude = null;
+        DiaryLocationName = string.Empty;
+        DiaryHasLocation = false;
     }
 
     private async Task BuildCalendarDaysAsync()

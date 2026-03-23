@@ -122,6 +122,12 @@ public class DiaryEntry
     public List<CaughtFish> CaughtFish { get; set; } = [];
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? ModifiedAt { get; set; }
+
+    // Lokacija
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? LocationName { get; set; }
+    public bool HasLocation => Latitude.HasValue && Longitude.HasValue;
 }
 
 /// <summary>

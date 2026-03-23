@@ -32,6 +32,18 @@ public partial class DiaryEntryItem : ObservableObject
     [ObservableProperty]
     private ObservableCollection<CaughtFish> _caughtFish = [];
 
+    // Location
+    [ObservableProperty]
+    private double? _latitude;
+
+    [ObservableProperty]
+    private double? _longitude;
+
+    [ObservableProperty]
+    private string? _locationName;
+
+    public bool HasLocation => Latitude.HasValue && Longitude.HasValue;
+
     public static DiaryEntryItem FromModel(DiaryEntry entry)
     {
         var fishSummary = entry.CaughtFish.Count > 0
@@ -46,7 +58,10 @@ public partial class DiaryEntryItem : ObservableObject
             FishSummary = fishSummary,
             Notes = entry.Notes,
             Date = entry.Date,
-            CaughtFish = new ObservableCollection<CaughtFish>(entry.CaughtFish)
+            CaughtFish = new ObservableCollection<CaughtFish>(entry.CaughtFish),
+            Latitude = entry.Latitude,
+            Longitude = entry.Longitude,
+            LocationName = entry.LocationName
         };
     }
 }
@@ -100,6 +115,22 @@ public partial class DiaryViewModel : BaseViewModel
 
     [ObservableProperty]
     private bool _useQuantity = true;
+
+    // Location
+    [ObservableProperty]
+    private string _editorLocationName = string.Empty;
+
+    [ObservableProperty]
+    private double? _editorLatitude;
+
+    [ObservableProperty]
+    private double? _editorLongitude;
+
+    [ObservableProperty]
+    private bool _editorHasLocation;
+
+    [ObservableProperty]
+    private bool _isGettingLocation;
 
     private Guid? _editingEntryId;
     private List<string> _allFishTypes = [];
@@ -182,6 +213,10 @@ public partial class DiaryViewModel : BaseViewModel
         FishQuantity = string.Empty;
         FishWeight = string.Empty;
         UseQuantity = true;
+        EditorLocationName = string.Empty;
+        EditorLatitude = null;
+        EditorLongitude = null;
+        EditorHasLocation = false;
         IsEditorOpen = true;
     }
 
@@ -209,6 +244,10 @@ public partial class DiaryViewModel : BaseViewModel
         FishQuantity = string.Empty;
         FishWeight = string.Empty;
         UseQuantity = true;
+        EditorLatitude = entry.Latitude;
+        EditorLongitude = entry.Longitude;
+        EditorLocationName = entry.LocationName ?? string.Empty;
+        EditorHasLocation = entry.HasLocation;
         IsEditorOpen = true;
     }
 
@@ -272,7 +311,10 @@ public partial class DiaryViewModel : BaseViewModel
             Date = EditorDate,
             Title = EditorTitle.Trim(),
             Notes = EditorNotes,
-            CaughtFish = EditorCaughtFish.ToList()
+            CaughtFish = EditorCaughtFish.ToList(),
+            Latitude = EditorLatitude,
+            Longitude = EditorLongitude,
+            LocationName = string.IsNullOrWhiteSpace(EditorLocationName) ? null : EditorLocationName
         };
 
         if (IsEditMode && _editingEntryId.HasValue)
@@ -294,5 +336,80 @@ public partial class DiaryViewModel : BaseViewModel
     private void CancelEditor()
     {
         IsEditorOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task GetCurrentLocationAsync()
+    {
+        if (IsGettingLocation) return;
+
+        try
+        {
+            IsGettingLocation = true;
+
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await Shell.Current.DisplayAlert("Lokacija", "Potrebna je dozvola za pristup lokaciji.", "OK");
+                    return;
+                }
+            }
+
+            var location = await Geolocation.GetLocationAsync(new GeolocationRequest
+            {
+                DesiredAccuracy = GeolocationAccuracy.Medium,
+                Timeout = TimeSpan.FromSeconds(15)
+            });
+
+            if (location != null)
+            {
+                EditorLatitude = location.Latitude;
+                EditorLongitude = location.Longitude;
+                EditorHasLocation = true;
+                EditorLocationName = $"{location.Latitude:F4}, {location.Longitude:F4}";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Location error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Greška", "Nije moguće dobiti lokaciju.", "OK");
+        }
+        finally
+        {
+            IsGettingLocation = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearEditorLocation()
+    {
+        EditorLatitude = null;
+        EditorLongitude = null;
+        EditorLocationName = string.Empty;
+        EditorHasLocation = false;
+    }
+
+    [RelayCommand]
+    private async Task OpenLocationInMapsAsync(DiaryEntryItem? entry)
+    {
+        if (entry == null || !entry.HasLocation) return;
+
+        try
+        {
+            var location = new Location(entry.Latitude!.Value, entry.Longitude!.Value);
+            var options = new MapLaunchOptions
+            {
+                Name = entry.LocationName ?? "Pecanje"
+            };
+            await Map.OpenAsync(location, options);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Map error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Greška", "Nije moguće otvoriti mapu.", "OK");
+        }
     }
 }
