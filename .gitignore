@@ -1,34 +1,50 @@
-# Gradle files
-.gradle/
-build/
+syntax: glob                                                                                                                                                                                      
+# Build results                                                                                                                                                                                     bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
 
-# Local configuration file (sdk path, etc)
-local.properties
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
-*.iml
+# JetBrains Rider
 .idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
 
-# Keystore files
-*.jks
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+**/packages/*
+
+# MAUI/Android specific
+*.apk
+*.aab
 *.keystore
+  
+# Windows specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+# Mac specific
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# Android Profiling
-*.hprof
+# Claude Code
+.claude/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+nul

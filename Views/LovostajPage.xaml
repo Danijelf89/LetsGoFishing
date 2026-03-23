@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LetsGoFishing.ViewModels"
+             xmlns:controls="clr-namespace:LetsGoFishing.Views.Controls"
+             x:Class="LetsGoFishing.Views.LovostajPage"
+             x:DataType="vm:LovostajViewModel"
+             Title="Lovostaj"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="16" Spacing="16">
+                <!-- Header -->
+                <Label Text="Lovostaj i lovne dužine"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+
+                <Label Text="Periodi zabrane i minimalne dozvoljene veličine po vrstama riba u Srbiji"
+                       TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                       FontSize="13" />
+
+                <!-- Search -->
+                <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12">
+                    <Entry Placeholder="Pretraži ribu po imenu..."
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           Text="{Binding SearchText}"
+                           BackgroundColor="Transparent" />
+                </Border>
+
+                <!-- Filter checkbox -->
+                <HorizontalStackLayout Spacing="8">
+                    <CheckBox IsChecked="{Binding ShowOnlyClosedSeason}" Color="#FFC107" />
+                    <Label Text="Samo u lovostaju" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <!-- Fish cards - better for mobile -->
+                <Label Text="Tabela lovostaja" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+
+                <CollectionView ItemsSource="{Binding FilteredSpecies}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FishSpeciesItem">
+                            <Border BackgroundColor="{Binding BackgroundColor}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12"
+                                    Margin="0,0,0,8">
+                                <VerticalStackLayout Spacing="6">
+                                    <!-- Fish name row -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Name}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                                   FontAttributes="Bold"
+                                                   FontSize="15" />
+                                            <Label Text="{Binding LatinName}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                                   FontSize="11"
+                                                   FontAttributes="Italic" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="1"
+                                                IsVisible="{Binding IsInClosedSeason}"
+                                                BackgroundColor="#FFC107"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 4"
+                                                Padding="8,4"
+                                                VerticalOptions="Center">
+                                            <Label Text="U LOVOSTAJU" TextColor="Black" FontSize="10" FontAttributes="Bold" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Info row -->
+                                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource DividerLight}, Dark={StaticResource DividerDark}}" Margin="0,4" />
+                                    <Grid ColumnDefinitions="*,*">
+                                        <VerticalStackLayout>
+                                            <Label Text="Period lovostaja" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="11" />
+                                            <Label Text="{Binding ClosedSeasonPeriod}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1">
+                                            <Label Text="Min. lovna dužina" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="11" />
+                                            <Label Text="{Binding MinLength}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            <!-- Protected species -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="8">
+                        <BoxView Color="#F44336" WidthRequest="10" HeightRequest="10" CornerRadius="5" VerticalOptions="Center" />
+                        <Label Text="Trajno zaštićene vrste" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="Lov ovih vrsta je strogo zabranjen tokom cele godine."
+                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
+
+                    <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                        <BindableLayout.ItemsSource>
+                            <Binding Path="ProtectedSpecies" />
+                        </BindableLayout.ItemsSource>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FishSpeciesItem">
+                                <Border BackgroundColor="#40F44336"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,8"
+                                        Margin="0,0,8,8">
+                                    <VerticalStackLayout>
+                                        <HorizontalStackLayout Spacing="6">
+                                            <BoxView Color="#F44336" WidthRequest="8" HeightRequest="8" CornerRadius="4" VerticalOptions="Center" />
+                                            <Label Text="{Binding Name}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                                        </HorizontalStackLayout>
+                                        <Label Text="{Binding LatinName}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="11" FontAttributes="Italic" Margin="14,0,0,0" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Invasive species -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="8">
+                        <BoxView Color="#FF9800" WidthRequest="10" HeightRequest="10" CornerRadius="5" VerticalOptions="Center" />
+                        <Label Text="Invazivne vrste (bez ograničenja)" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="Za ove vrste ne postoji lovostaj niti minimalna lovna dužina."
+                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
+
+                    <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                        <BindableLayout.ItemsSource>
+                            <Binding Path="InvasiveSpecies" />
+                        </BindableLayout.ItemsSource>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FishSpeciesItem">
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,8"
+                                        Margin="0,0,8,8">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Name}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                                        <Label Text="{Binding LatinName}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="11" FontAttributes="Italic" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </VerticalStackLayout>
+            </Border>
+
+                <!-- Legend -->
+                <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="12"
+                        Margin="0,0,0,8">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Legenda" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                            <HorizontalStackLayout Spacing="6" Margin="0,0,16,4">
+                                <BoxView Color="#4CAF50" WidthRequest="12" HeightRequest="12" CornerRadius="6" />
+                                <Label Text="Dozvoljeno" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="6" Margin="0,0,16,4">
+                                <BoxView Color="#FFC107" WidthRequest="12" HeightRequest="12" CornerRadius="6" />
+                                <Label Text="Lovostaj" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="6" Margin="0,0,0,4">
+                                <BoxView Color="#F44336" WidthRequest="12" HeightRequest="12" CornerRadius="6" />
+                                <Label Text="Zaštićena" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+                            </HorizontalStackLayout>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Fish Footer -->
+        <controls:FishFooter Grid.Row="1" />
+    </Grid>
+</ContentPage>

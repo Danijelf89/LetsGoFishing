@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LetsGoFishing.ViewModels"
+             xmlns:controls="clr-namespace:LetsGoFishing.Views.Controls"
+             x:Class="LetsGoFishing.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Podešavanja"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+        <VerticalStackLayout Padding="16" Spacing="16">
+            <!-- Header -->
+            <Label Text="Podešavanja"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+
+            <!-- Weather settings -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="16">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="☀️" FontSize="20" />
+                        <Label Text="Vremenska prognoza"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <!-- City picker -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Grad za vremensku prognozu" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
+                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="4">
+                            <Picker ItemsSource="{Binding AvailableCities}"
+                                    SelectedItem="{Binding SelectedCity}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    Title="Izaberite grad"
+                                    TitleColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        </Border>
+                        <Label Text="Prognoza se može osvežiti dugmetom 🔄 na kalendaru"
+                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                               FontSize="11"
+                               Margin="0,4,0,0" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Theme settings -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="16">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="🎨" FontSize="20" />
+                        <Label Text="Izgled"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Tamna tema" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                        <Border Grid.Column="1"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark=Transparent}"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="4,0">
+                            <Switch IsToggled="{Binding IsDarkTheme}"
+                                    OnColor="#1B5E20"
+                                    ThumbColor="{AppThemeBinding Light=#1B5E20, Dark=White}" />
+                        </Border>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- About -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="ℹ️" FontSize="20" />
+                        <Label Text="O aplikaciji"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="Let's Go Fishing"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           FontSize="16"
+                           FontAttributes="Bold" />
+
+                    <Label Text="Verzija 1.0"
+                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           FontSize="13" />
+
+                    <Label Text="Aplikacija za praćenje lovostaja, dnevnik pecanja i vremensku prognozu za ribolovce u Srbiji i Hrvatskoj."
+                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           FontSize="13" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Fish Footer -->
+        <controls:FishFooter Grid.Row="1" />
+    </Grid>
+</ContentPage>

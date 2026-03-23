@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LetsGoFishing.Views.SplashPage"
+             BackgroundColor="#121212"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False">
+
+    <Grid>
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+
+            <!-- Animated fish -->
+            <Label x:Name="FishEmoji"
+                   Text="🐟"
+                   FontSize="80"
+                   HorizontalOptions="Center" />
+
+            <!-- Title -->
+            <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                <Label Text="Idemo na pecanje"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
+                <Label Text="Ribolovni kalendar za Srbiju"
+                       FontSize="14"
+                       TextColor="#888"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Loading indicator -->
+            <VerticalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,30,0,0">
+                <ActivityIndicator IsRunning="True"
+                                   Color="#1B5E20"
+                                   WidthRequest="40"
+                                   HeightRequest="40" />
+                <Label x:Name="LoadingText"
+                       Text="Učitavanje..."
+                       FontSize="12"
+                       TextColor="#888"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="LetsGoFishing.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:LetsGoFishing.Views"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="{StaticResource FishingGreen}"
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.UnselectedColor="#80FFFFFF"
+    Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+    Shell.TabBarForegroundColor="{StaticResource FishingGreen}"
+    Shell.TabBarTitleColor="{StaticResource FishingGreen}"
+    Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}">
+
+    <!-- Splash Screen (no tabs) -->
+    <ShellContent
+        Route="Splash"
+        ContentTemplate="{DataTemplate views:SplashPage}"
+        Shell.TabBarIsVisible="False"
+        Shell.NavBarIsVisible="False" />
+
+    <!-- City Selection (no tabs) -->
+    <ShellContent
+        Route="CitySelection"
+        ContentTemplate="{DataTemplate views:CitySelectionPage}"
+        Shell.TabBarIsVisible="False"
+        Shell.NavBarIsVisible="False" />
+
+    <!-- Main TabBar -->
+    <TabBar Route="Main">
+        <ShellContent
+            Route="Calendar"
+            Title="Kalendar"
+            Icon="tab_calendar.png"
+            ContentTemplate="{DataTemplate views:CalendarPage}" />
+
+        <ShellContent
+            Route="Lovostaj"
+            Title="Lovostaj"
+            Icon="tab_fish.png"
+            ContentTemplate="{DataTemplate views:LovostajPage}" />
+
+        <ShellContent
+            Route="Diary"
+            Title="Dnevnik"
+            Icon="tab_diary.png"
+            ContentTemplate="{DataTemplate views:DiaryPage}" />
+
+        <ShellContent
+            Route="Settings"
+            Title="Podešavanja"
+            Icon="tab_settings.png"
+            ContentTemplate="{DataTemplate views:SettingsPage}" />
+
+        <ShellContent
+            Route="Help"
+            Title="Uputstvo"
+            Icon="tab_help.png"
+            ContentTemplate="{DataTemplate views:HelpPage}" />
+    </TabBar>
+
+</Shell>

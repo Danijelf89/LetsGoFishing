@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LetsGoFishing.Views.Controls.FishFooter">
+    <Border HeightRequest="45">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#E3F2FD" Offset="0" />
+                <GradientStop Color="#90CAF9" Offset="0.3" />
+                <GradientStop Color="#42A5F5" Offset="0.7" />
+                <GradientStop Color="#1E88E5" Offset="1" />
+            </LinearGradientBrush>
+        </Border.Background>
+        <Grid>
+            <Label x:Name="Fish1" Text="🐟" FontSize="22" VerticalOptions="Center" />
+            <Label x:Name="Fish2" Text="🐟" FontSize="16" VerticalOptions="End" Margin="0,0,0,3" ScaleX="-1" />
+            <Label x:Name="Fish3" Text="🐟" FontSize="12" VerticalOptions="Start" Margin="0,3,0,0" />
+            <Label x:Name="Fish4" Text="🐋" FontSize="28" VerticalOptions="Center" Opacity="0.85" ScaleX="-1" />
+        </Grid>
+    </Border>
+</ContentView>

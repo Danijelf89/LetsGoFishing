@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LetsGoFishing.Views.CitySelectionPage"
+             BackgroundColor="#121212"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False">
+
+    <Grid Padding="24">
+        <Border BackgroundColor="#1E1E1E"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 16"
+                MaximumWidthRequest="450"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Padding="24">
+
+            <VerticalStackLayout Spacing="16">
+                <!-- Header -->
+                <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                    <Label Text="Dobrodošli!"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="Izaberite grad za vremensku prognozu"
+                           FontSize="14"
+                           TextColor="#888"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Weather icon -->
+                <Label Text="🌤"
+                       FontSize="56"
+                       HorizontalOptions="Center"
+                       Margin="0,8" />
+
+                <!-- Search box -->
+                <Border BackgroundColor="#2D2D2D"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Label Text="🔍" FontSize="16" VerticalOptions="Center" Margin="0,0,8,0" />
+                        <Entry x:Name="SearchEntry"
+                               Grid.Column="1"
+                               Placeholder="Pretraži grad..."
+                               PlaceholderColor="#666"
+                               TextColor="White"
+                               BackgroundColor="Transparent"
+                               TextChanged="OnSearchTextChanged" />
+                    </Grid>
+                </Border>
+
+                <!-- City list -->
+                <Border BackgroundColor="#2D2D2D"
+                        StrokeThickness="1"
+                        Stroke="#333"
+                        StrokeShape="RoundRectangle 8"
+                        HeightRequest="250">
+                    <CollectionView x:Name="CityList"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnCitySelected">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="12,10" ColumnDefinitions="Auto,*">
+                                    <Label Text="📍" FontSize="14" VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           TextColor="White"
+                                           FontSize="14"
+                                           VerticalOptions="Center"
+                                           Margin="8,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+
+                <!-- Selected city display -->
+                <Label x:Name="SelectedCityLabel"
+                       Text="Izabrano: -"
+                       TextColor="#888"
+                       FontSize="13" />
+
+                <!-- Buttons -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Text="Kasnije"
+                            BackgroundColor="#2D2D2D"
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="48"
+                            Clicked="OnSkipClicked" />
+                    <Button x:Name="ConfirmButton"
+                            Grid.Column="1"
+                            Text="Potvrdi"
+                            BackgroundColor="#1B5E20"
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="48"
+                            IsEnabled="False"
+                            Clicked="OnConfirmClicked" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

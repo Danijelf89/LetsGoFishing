@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LetsGoFishing.ViewModels"
+             xmlns:models="clr-namespace:LetsGoFishing.Models"
+             xmlns:controls="clr-namespace:LetsGoFishing.Views.Controls"
+             x:Class="LetsGoFishing.Views.DiaryPage"
+             x:DataType="vm:DiaryViewModel"
+             Title="Dnevnik"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
+
+    <Grid RowDefinitions="*,Auto">
+        <!-- Main content -->
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="16">
+                <!-- Header -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="Dnevnik pecanja"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+
+                        <!-- Year navigation -->
+                        <HorizontalStackLayout Spacing="12" Margin="0,8,0,0">
+                            <Button Text="◄"
+                                    Command="{Binding ChangeYearCommand}"
+                                    CommandParameter="-1"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                    WidthRequest="40"
+                                    HeightRequest="36"
+                                    CornerRadius="8" />
+                            <Label Text="{Binding SelectedYear}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   VerticalOptions="Center" />
+                            <Button Text="►"
+                                    Command="{Binding ChangeYearCommand}"
+                                    CommandParameter="1"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                    WidthRequest="40"
+                                    HeightRequest="36"
+                                    CornerRadius="8" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <Button Grid.Column="1"
+                            Text="+ Novi zapis"
+                            Command="{Binding OpenNewEntryCommand}"
+                            BackgroundColor="#1B5E20"
+                            TextColor="White"
+                            CornerRadius="8"
+                            VerticalOptions="Start" />
+                </Grid>
+
+                <!-- Loading -->
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="#1B5E20"
+                                   HorizontalOptions="Center" />
+
+                <!-- Entries list -->
+                <CollectionView ItemsSource="{Binding Entries}"
+                                SelectionMode="None"
+                                IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Padding="40">
+                            <Label Text="Nema zapisa za ovu godinu"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                   FontSize="16"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Dodajte prvi zapis klikom na dugme 'Novi zapis'"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                   FontSize="13"
+                                   HorizontalOptions="Center"
+                                   Margin="0,8,0,0" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DiaryEntryItem">
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="16"
+                                    Margin="0,0,0,8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Title}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Label Text="📅" FontSize="12" />
+                                                <Label Text="{Binding DateDisplay}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Label Text="🐟" FontSize="12" />
+                                                <Label Text="{Binding FishSummary}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                        <Button Text="✏️"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=EditEntryCommand}"
+                                                CommandParameter="{Binding}"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                                WidthRequest="44"
+                                                HeightRequest="44"
+                                                CornerRadius="8" />
+                                        <Button Text="🗑️"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=DeleteEntryCommand}"
+                                                CommandParameter="{Binding}"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                                WidthRequest="44"
+                                                HeightRequest="44"
+                                                CornerRadius="8" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Footer stats -->
+                <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="16">
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                        <Label Text="📅" FontSize="16" VerticalOptions="Center" />
+                        <Label Text="Dana na vodi:" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="14" VerticalOptions="Center" />
+                        <Label Text="{Binding FishingDaysCount}"
+                               TextColor="#1B5E20"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Label Text="dana" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="14" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Fish Footer -->
+        <controls:FishFooter Grid.Row="1" />
+
+        <!-- Editor overlay -->
+        <Grid Grid.RowSpan="2" IsVisible="{Binding IsEditorOpen}" BackgroundColor="#80000000">
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16"
+                    Margin="16"
+                    MaximumWidthRequest="500"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <ScrollView>
+                    <VerticalStackLayout Padding="20" Spacing="16">
+                        <!-- Header -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding IsEditMode, Converter={StaticResource BoolToEditModeTextConverter}}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                            <Button Grid.Column="1"
+                                    Text="✕"
+                                    Command="{Binding CancelEditorCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                    WidthRequest="40"
+                                    HeightRequest="40" />
+                        </Grid>
+
+                        <!-- Title -->
+                        <VerticalStackLayout Spacing="4">
+                            <HorizontalStackLayout>
+                                <Label Text="Naslov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                                <Label Text=" *" TextColor="#F44336" />
+                            </HorizontalStackLayout>
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12">
+                                <Entry Text="{Binding EditorTitle}"
+                                       Placeholder="Unesite naslov zapisa..."
+                                       PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                       BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Date -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Datum" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                            <DatePicker Date="{Binding EditorDate}"
+                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" />
+                        </VerticalStackLayout>
+
+                        <!-- Notes -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Beleške" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12" HeightRequest="80">
+                                <Editor Text="{Binding EditorNotes}"
+                                        Placeholder="Unesite beleške..."
+                                        PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                        BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Add fish -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Dodaj ulov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12">
+                                <VerticalStackLayout Spacing="8">
+                                    <Picker ItemsSource="{Binding FilteredFishTypes}"
+                                            SelectedItem="{Binding SelectedFishType}"
+                                            Title="Izaberi vrstu ribe"
+                                            TitleColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                            TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <Entry Text="{Binding FishQuantity}"
+                                               Placeholder="Količina"
+                                               PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                               Keyboard="Numeric"
+                                               IsVisible="{Binding UseQuantity}" />
+                                        <Entry Text="{Binding FishWeight}"
+                                               Placeholder="Težina (kg)"
+                                               PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                               Keyboard="Numeric"
+                                               IsVisible="{Binding UseQuantity, Converter={StaticResource InvertedBoolConverter}}" />
+
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                            <RadioButton Content="Kom" IsChecked="{Binding UseQuantity}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                            <RadioButton Content="Kg" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                        </HorizontalStackLayout>
+
+                                        <Button Grid.Column="2"
+                                                Text="+"
+                                                Command="{Binding AddFishToListCommand}"
+                                                BackgroundColor="#1B5E20"
+                                                TextColor="White"
+                                                WidthRequest="44"
+                                                HeightRequest="44"
+                                                CornerRadius="8" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Fish list -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Lista ulova" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="8" MinimumHeightRequest="100">
+                                <CollectionView ItemsSource="{Binding EditorCaughtFish}" SelectionMode="None">
+                                    <CollectionView.EmptyView>
+                                        <Label Text="Još niste dodali ulov"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </CollectionView.EmptyView>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:CaughtFish">
+                                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource ListItemLight}, Dark={StaticResource ListItemDark}}"
+                                                    StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="12,8"
+                                                    Margin="0,0,0,4">
+                                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                                    <Label Text="{Binding FishName}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                                                    <Label Grid.Column="1" Text="{Binding DisplayQuantity}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" VerticalOptions="Center" Margin="0,0,12,0" />
+                                                    <Button Grid.Column="2"
+                                                            Text="🗑️"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=RemoveFishFromListCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            BackgroundColor="Transparent"
+                                                            WidthRequest="36"
+                                                            HeightRequest="36" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Buttons -->
+                        <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                            <Button Text="Otkaži"
+                                    Command="{Binding CancelEditorCommand}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                    CornerRadius="8"
+                                    Padding="20,12" />
+                            <Button Text="Sačuvaj"
+                                    Command="{Binding SaveEntryCommand}"
+                                    BackgroundColor="#1B5E20"
+                                    TextColor="White"
+                                    CornerRadius="8"
+                                    Padding="20,12" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>
