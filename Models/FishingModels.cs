@@ -128,6 +128,10 @@ public class DiaryEntry
     public double? Longitude { get; set; }
     public string? LocationName { get; set; }
     public bool HasLocation => Latitude.HasValue && Longitude.HasValue;
+
+    // Slike
+    public List<string> ImagePaths { get; set; } = [];
+    public bool HasImages => ImagePaths.Count > 0;
 }
 
 /// <summary>

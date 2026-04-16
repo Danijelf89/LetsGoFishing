@@ -42,7 +42,12 @@ public partial class DiaryEntryItem : ObservableObject
     [ObservableProperty]
     private string? _locationName;
 
+    // Slike
+    [ObservableProperty]
+    private ObservableCollection<string> _imagePaths = [];
+
     public bool HasLocation => Latitude.HasValue && Longitude.HasValue;
+    public bool HasImages => ImagePaths.Count > 0;
 
     public static DiaryEntryItem FromModel(DiaryEntry entry)
     {
@@ -61,7 +66,8 @@ public partial class DiaryEntryItem : ObservableObject
             CaughtFish = new ObservableCollection<CaughtFish>(entry.CaughtFish),
             Latitude = entry.Latitude,
             Longitude = entry.Longitude,
-            LocationName = entry.LocationName
+            LocationName = entry.LocationName,
+            ImagePaths = new ObservableCollection<string>(entry.ImagePaths)
         };
     }
 }
@@ -88,6 +94,9 @@ public partial class DiaryViewModel : BaseViewModel
 
     [ObservableProperty]
     private bool _isEditMode;
+
+    [ObservableProperty]
+    private bool _isViewMode;
 
     [ObservableProperty]
     private string _editorTitle = string.Empty;
@@ -131,6 +140,10 @@ public partial class DiaryViewModel : BaseViewModel
 
     [ObservableProperty]
     private bool _isGettingLocation;
+
+    // Slike
+    [ObservableProperty]
+    private ObservableCollection<string> _editorImages = [];
 
     private Guid? _editingEntryId;
     private List<string> _allFishTypes = [];
@@ -205,6 +218,7 @@ public partial class DiaryViewModel : BaseViewModel
     {
         _editingEntryId = null;
         IsEditMode = false;
+        IsViewMode = false;
         EditorTitle = string.Empty;
         EditorDate = DateTime.Today;
         EditorNotes = string.Empty;
@@ -217,6 +231,40 @@ public partial class DiaryViewModel : BaseViewModel
         EditorLatitude = null;
         EditorLongitude = null;
         EditorHasLocation = false;
+        EditorImages.Clear();
+        IsEditorOpen = true;
+    }
+
+    [RelayCommand]
+    private void ViewEntry(DiaryEntryItem? entry)
+    {
+        if (entry == null) return;
+
+        _editingEntryId = entry.Id;
+        IsEditMode = false;
+        IsViewMode = true;
+        EditorTitle = entry.Title;
+        EditorDate = entry.Date;
+        EditorNotes = entry.Notes;
+        EditorCaughtFish.Clear();
+        foreach (var fish in entry.CaughtFish)
+        {
+            EditorCaughtFish.Add(new CaughtFish
+            {
+                FishName = fish.FishName,
+                Quantity = fish.Quantity,
+                WeightKg = fish.WeightKg
+            });
+        }
+        EditorLatitude = entry.Latitude;
+        EditorLongitude = entry.Longitude;
+        EditorLocationName = entry.LocationName ?? string.Empty;
+        EditorHasLocation = entry.HasLocation;
+        EditorImages.Clear();
+        foreach (var img in entry.ImagePaths)
+        {
+            EditorImages.Add(img);
+        }
         IsEditorOpen = true;
     }
 
@@ -227,6 +275,7 @@ public partial class DiaryViewModel : BaseViewModel
 
         _editingEntryId = entry.Id;
         IsEditMode = true;
+        IsViewMode = false;
         EditorTitle = entry.Title;
         EditorDate = entry.Date;
         EditorNotes = entry.Notes;
@@ -248,6 +297,11 @@ public partial class DiaryViewModel : BaseViewModel
         EditorLongitude = entry.Longitude;
         EditorLocationName = entry.LocationName ?? string.Empty;
         EditorHasLocation = entry.HasLocation;
+        EditorImages.Clear();
+        foreach (var img in entry.ImagePaths)
+        {
+            EditorImages.Add(img);
+        }
         IsEditorOpen = true;
     }
 
@@ -314,7 +368,8 @@ public partial class DiaryViewModel : BaseViewModel
             CaughtFish = EditorCaughtFish.ToList(),
             Latitude = EditorLatitude,
             Longitude = EditorLongitude,
-            LocationName = string.IsNullOrWhiteSpace(EditorLocationName) ? null : EditorLocationName
+            LocationName = string.IsNullOrWhiteSpace(EditorLocationName) ? null : EditorLocationName,
+            ImagePaths = EditorImages.ToList()
         };
 
         if (IsEditMode && _editingEntryId.HasValue)
@@ -390,6 +445,110 @@ public partial class DiaryViewModel : BaseViewModel
         EditorLongitude = null;
         EditorLocationName = string.Empty;
         EditorHasLocation = false;
+    }
+
+    [RelayCommand]
+    private async Task AddImageAsync()
+    {
+        try
+        {
+            var action = await Shell.Current.DisplayActionSheet(
+                "Dodaj sliku",
+                "Otkaži",
+                null,
+                "📷 Fotografiši",
+                "🖼️ Izaberi iz galerije");
+
+            if (action == "📷 Fotografiši")
+            {
+                if (!MediaPicker.Default.IsCaptureSupported)
+                {
+                    await Shell.Current.DisplayAlert("Greška", "Kamera nije dostupna na ovom uređaju.", "OK");
+                    return;
+                }
+
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
+                if (photo != null)
+                {
+                    var savedPath = await SaveImageLocallyAsync(photo);
+                    if (!string.IsNullOrEmpty(savedPath))
+                    {
+                        EditorImages.Add(savedPath);
+                    }
+                }
+            }
+            else if (action == "🖼️ Izaberi iz galerije")
+            {
+                var photo = await MediaPicker.Default.PickPhotoAsync();
+                if (photo != null)
+                {
+                    var savedPath = await SaveImageLocallyAsync(photo);
+                    if (!string.IsNullOrEmpty(savedPath))
+                    {
+                        EditorImages.Add(savedPath);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Image error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Greška", "Nije moguće dodati sliku.", "OK");
+        }
+    }
+
+    private async Task<string?> SaveImageLocallyAsync(FileResult photo)
+    {
+        try
+        {
+            var imagesDir = Path.Combine(FileSystem.AppDataDirectory, "diary_images");
+            if (!Directory.Exists(imagesDir))
+            {
+                Directory.CreateDirectory(imagesDir);
+            }
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}";
+            var localPath = Path.Combine(imagesDir, fileName);
+
+            using var sourceStream = await photo.OpenReadAsync();
+            using var localFileStream = File.Create(localPath);
+            await sourceStream.CopyToAsync(localFileStream);
+
+            return localPath;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Save image error: {ex.Message}");
+            return null;
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveImage(string? imagePath)
+    {
+        if (!string.IsNullOrEmpty(imagePath) && EditorImages.Contains(imagePath))
+        {
+            EditorImages.Remove(imagePath);
+            try
+            {
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                }
+            }
+            catch { /* ignorišemo greške pri brisanju */ }
+        }
+    }
+
+    [RelayCommand]
+    private async Task PreviewImageAsync(string? imagePath)
+    {
+        if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath)) return;
+
+        await Shell.Current.GoToAsync("ImagePreviewPage", new Dictionary<string, object>
+        {
+            ["ImagePath"] = imagePath
+        });
     }
 
     [RelayCommand]

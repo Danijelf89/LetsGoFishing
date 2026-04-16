@@ -118,8 +118,9 @@
                                            TextColor="{Binding DayTextColor}"
                                            FontSize="13"
                                            FontAttributes="{Binding IsToday, Converter={StaticResource BoolToFontAttributeConverter}}" />
-                                    <Label Text="📓"
-                                           FontSize="8"
+                                    <Label Text="●"
+                                           FontSize="10"
+                                           TextColor="#4CAF50"
                                            IsVisible="{Binding HasDiaryEntry}"
                                            VerticalOptions="Start" />
                                 </HorizontalStackLayout>
@@ -170,6 +171,7 @@
         <!-- Day Context Menu Popup -->
         <Grid Grid.RowSpan="4"
               IsVisible="{Binding IsContextMenuVisible}"
+              InputTransparent="False"
               BackgroundColor="#80000000">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding CloseContextMenuCommand}" />
@@ -220,6 +222,7 @@
         <!-- Day Fish Popup -->
         <Grid Grid.RowSpan="4"
               IsVisible="{Binding IsDayPopupVisible}"
+              InputTransparent="False"
               BackgroundColor="#80000000">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding CloseDayPopupCommand}" />
@@ -315,6 +318,7 @@
         <!-- Weather Details Popup -->
         <Grid Grid.RowSpan="4"
               IsVisible="{Binding IsWeatherPopupVisible}"
+              InputTransparent="False"
               BackgroundColor="#80000000">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding CloseWeatherPopupCommand}" />
@@ -412,6 +416,7 @@
         <!-- Diary Editor Popup -->
         <Grid Grid.RowSpan="4"
               IsVisible="{Binding IsDiaryEditorOpen}"
+              InputTransparent="False"
               BackgroundColor="#80000000">
             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
                     StrokeThickness="0"
@@ -519,21 +524,63 @@
                         <!-- Add fish -->
                         <VerticalStackLayout Spacing="6">
                             <Label Text="Dodaj ulov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontSize="13" />
+
+                            <!-- Toggle Kom/Kg -->
+                            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                                <HorizontalStackLayout Spacing="4">
+                                    <RadioButton x:Name="RadioKom"
+                                                 IsChecked="{Binding UseQuantity}"
+                                                 GroupName="FishUnit" />
+                                    <Label Text="Kom"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                           FontSize="13"
+                                           VerticalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnKomLabelTapped" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4">
+                                    <RadioButton x:Name="RadioKg"
+                                                 IsChecked="{Binding UseQuantity, Converter={StaticResource InvertedBoolConverter}}"
+                                                 GroupName="FishUnit" />
+                                    <Label Text="Kg"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                           FontSize="13"
+                                           VerticalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnKgLabelTapped" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
+
                             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10">
-                                <Grid ColumnDefinitions="*,60,Auto" ColumnSpacing="8">
+                                <Grid ColumnDefinitions="*,70,Auto" ColumnSpacing="8">
                                     <Picker ItemsSource="{Binding FilteredFishTypes}"
                                             SelectedItem="{Binding SelectedFishType}"
                                             Title="Vrsta"
                                             TitleColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
                                             TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                             FontSize="13" />
+                                    <!-- Količina (Kom) -->
                                     <Entry Grid.Column="1"
                                            Text="{Binding FishQuantity}"
                                            Placeholder="Kom"
                                            PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
                                            TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                            FontSize="13"
-                                           Keyboard="Numeric" />
+                                           Keyboard="Numeric"
+                                           IsVisible="{Binding UseQuantity}" />
+                                    <!-- Težina (Kg) -->
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding FishWeight}"
+                                           Placeholder="Kg"
+                                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                           FontSize="13"
+                                           Keyboard="Numeric"
+                                           IsVisible="{Binding UseQuantity, Converter={StaticResource InvertedBoolConverter}}" />
                                     <Button Grid.Column="2"
                                             Text="+"
                                             Command="{Binding AddFishToDiaryCommand}"
@@ -579,6 +626,73 @@
                             </CollectionView.ItemTemplate>
                         </CollectionView>
 
+                        <!-- Slike -->
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Slike"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                       FontSize="13"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="+ Dodaj"
+                                        Command="{Binding AddImageCommand}"
+                                        BackgroundColor="#1B5E20"
+                                        TextColor="White"
+                                        CornerRadius="8"
+                                        HeightRequest="32"
+                                        Padding="12,0"
+                                        FontSize="12" />
+                            </Grid>
+
+                            <CollectionView ItemsSource="{Binding DiaryImages}"
+                                            HeightRequest="90"
+                                            SelectionMode="None">
+                                <CollectionView.EmptyView>
+                                    <Label Text="Nema slika"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           FontSize="12"
+                                           HorizontalOptions="Center" />
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 8"
+                                                WidthRequest="80"
+                                                HeightRequest="80">
+                                            <Grid>
+                                                <Image Source="{Binding .}"
+                                                       Aspect="AspectFill"
+                                                       WidthRequest="80"
+                                                       HeightRequest="80">
+                                                    <Image.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CalendarViewModel}}, Path=PreviewImageCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                    </Image.GestureRecognizers>
+                                                </Image>
+                                                <Button Text="✕"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CalendarViewModel}}, Path=RemoveImageCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#80000000"
+                                                        TextColor="White"
+                                                        WidthRequest="24"
+                                                        HeightRequest="24"
+                                                        CornerRadius="12"
+                                                        Padding="0"
+                                                        FontSize="10"
+                                                        HorizontalOptions="End"
+                                                        VerticalOptions="Start"
+                                                        Margin="4" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+
                         <!-- Buttons -->
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Button Text="Otkaži"
@@ -595,7 +709,14 @@
                                     TextColor="White"
                                     CornerRadius="8"
                                     HeightRequest="44"
-                                    FontSize="14" />
+                                    FontSize="14">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding DiaryTitle.Length}" Value="0">
+                                        <Setter Property="Opacity" Value="0.5" />
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
                         </Grid>
                     </VerticalStackLayout>
                 </ScrollView>

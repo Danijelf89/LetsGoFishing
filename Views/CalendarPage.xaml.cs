@@ -17,4 +17,14 @@ public partial class CalendarPage : ContentPage
         base.OnAppearing();
         await _viewModel.LoadCalendarCommand.ExecuteAsync(null);
     }
+
+    private void OnKomLabelTapped(object sender, TappedEventArgs e)
+    {
+        _viewModel.UseQuantity = true;
+    }
+
+    private void OnKgLabelTapped(object sender, TappedEventArgs e)
+    {
+        _viewModel.UseQuantity = false;
+    }
 }

@@ -86,6 +86,10 @@
                                     StrokeShape="RoundRectangle 12"
                                     Padding="16"
                                     Margin="0,0,0,8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=ViewEntryCommand}"
+                                                          CommandParameter="{Binding}" />
+                                </Border.GestureRecognizers>
                                 <VerticalStackLayout Spacing="8">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Label Text="{Binding Title}"
@@ -163,8 +167,8 @@
         <!-- Fish Footer -->
         <controls:FishFooter Grid.Row="1" />
 
-        <!-- Editor overlay -->
-        <Grid Grid.RowSpan="2" IsVisible="{Binding IsEditorOpen}" BackgroundColor="#80000000">
+        <!-- Editor/View overlay -->
+        <Grid Grid.RowSpan="2" IsVisible="{Binding IsEditorOpen}" InputTransparent="False" BackgroundColor="#80000000">
             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 16"
@@ -176,10 +180,18 @@
                     <VerticalStackLayout Padding="20" Spacing="16">
                         <!-- Header -->
                         <Grid ColumnDefinitions="*,Auto">
+                            <!-- View Mode Header -->
+                            <Label Text="Prikaz zapisa"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   IsVisible="{Binding IsViewMode}" />
+                            <!-- Edit Mode Header -->
                             <Label Text="{Binding IsEditMode, Converter={StaticResource BoolToEditModeTextConverter}}"
                                    FontSize="20"
                                    FontAttributes="Bold"
-                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}" />
                             <Button Grid.Column="1"
                                     Text="✕"
                                     Command="{Binding CancelEditorCommand}"
@@ -189,8 +201,17 @@
                                     HeightRequest="40" />
                         </Grid>
 
-                        <!-- Title -->
-                        <VerticalStackLayout Spacing="4">
+                        <!-- Title - View Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Naslov" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                            <Label Text="{Binding EditorTitle}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        </VerticalStackLayout>
+
+                        <!-- Title - Edit Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <HorizontalStackLayout>
                                 <Label Text="Naslov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                                 <Label Text=" *" TextColor="#F44336" />
@@ -204,16 +225,37 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Date -->
-                        <VerticalStackLayout Spacing="4">
+                        <!-- Date - View Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Datum" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                            <Label Text="{Binding EditorDate, StringFormat='{0:d. MMMM yyyy.}'}"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                        </VerticalStackLayout>
+
+                        <!-- Date - Edit Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Label Text="Datum" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                             <DatePicker Date="{Binding EditorDate}"
                                         TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
                                         BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" />
                         </VerticalStackLayout>
 
-                        <!-- Notes -->
-                        <VerticalStackLayout Spacing="4">
+                        <!-- Notes - View Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Beleške" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                            <Label Text="{Binding EditorNotes}"
+                                   FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                            <Label Text="Nema beleški"
+                                   FontSize="14"
+                                   FontAttributes="Italic"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                   IsVisible="{Binding EditorNotes.Length, Converter={StaticResource ZeroIntToBoolConverter}}" />
+                        </VerticalStackLayout>
+
+                        <!-- Notes - Edit Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Label Text="Beleške" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12" HeightRequest="80">
                                 <Editor Text="{Binding EditorNotes}"
@@ -224,8 +266,22 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Location -->
-                        <VerticalStackLayout Spacing="4">
+                        <!-- Location - View Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Lokacija" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                            <Label Text="{Binding EditorLocationName}"
+                                   FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   IsVisible="{Binding EditorHasLocation}" />
+                            <Label Text="Lokacija nije sačuvana"
+                                   FontSize="14"
+                                   FontAttributes="Italic"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                   IsVisible="{Binding EditorHasLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                        </VerticalStackLayout>
+
+                        <!-- Location - Edit Mode -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Label Text="Lokacija" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12">
                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
@@ -264,8 +320,8 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Add fish -->
-                        <VerticalStackLayout Spacing="8">
+                        <!-- Add fish - only in Edit Mode -->
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Label Text="Dodaj ulov" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="12">
                                 <VerticalStackLayout Spacing="8">
@@ -307,8 +363,38 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Fish list -->
-                        <VerticalStackLayout Spacing="8">
+                        <!-- Fish list - View Mode (read only) -->
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Ulov" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="8" MinimumHeightRequest="60">
+                                <CollectionView ItemsSource="{Binding EditorCaughtFish}" SelectionMode="None">
+                                    <CollectionView.EmptyView>
+                                        <Label Text="Bez ulova"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                               FontAttributes="Italic"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </CollectionView.EmptyView>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:CaughtFish">
+                                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource ListItemLight}, Dark={StaticResource ListItemDark}}"
+                                                    StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="12,8"
+                                                    Margin="0,0,0,4">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <Label Text="{Binding FishName}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                                                    <Label Grid.Column="1" Text="{Binding DisplayQuantity}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" VerticalOptions="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Fish list - Edit Mode -->
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Label Text="Lista ulova" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" />
                             <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="8" MinimumHeightRequest="100">
                                 <CollectionView ItemsSource="{Binding EditorCaughtFish}" SelectionMode="None">
@@ -343,8 +429,124 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Buttons -->
-                        <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                        <!-- Slike - View Mode (read only) -->
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding IsViewMode}">
+                            <Label Text="Slike" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+
+                            <CollectionView ItemsSource="{Binding EditorImages}"
+                                            HeightRequest="100"
+                                            SelectionMode="None">
+                                <CollectionView.EmptyView>
+                                    <Label Text="Nema slika"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           FontSize="12"
+                                           FontAttributes="Italic"
+                                           HorizontalOptions="Center" />
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 8"
+                                                WidthRequest="90"
+                                                HeightRequest="90">
+                                            <Image Source="{Binding .}"
+                                                   Aspect="AspectFill"
+                                                   WidthRequest="90"
+                                                   HeightRequest="90">
+                                                <Image.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=PreviewImageCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Image.GestureRecognizers>
+                                            </Image>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+
+                        <!-- Slike - Edit Mode -->
+                        <VerticalStackLayout Spacing="8" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Slike"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                       FontSize="14"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1"
+                                        Text="+ Dodaj"
+                                        Command="{Binding AddImageCommand}"
+                                        BackgroundColor="#1B5E20"
+                                        TextColor="White"
+                                        CornerRadius="8"
+                                        HeightRequest="32"
+                                        Padding="12,0"
+                                        FontSize="12" />
+                            </Grid>
+
+                            <CollectionView ItemsSource="{Binding EditorImages}"
+                                            HeightRequest="100"
+                                            SelectionMode="None">
+                                <CollectionView.EmptyView>
+                                    <Label Text="Nema slika"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                                           FontSize="12"
+                                           HorizontalOptions="Center" />
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 8"
+                                                WidthRequest="90"
+                                                HeightRequest="90">
+                                            <Grid>
+                                                <Image Source="{Binding .}"
+                                                       Aspect="AspectFill"
+                                                       WidthRequest="90"
+                                                       HeightRequest="90">
+                                                    <Image.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=PreviewImageCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                    </Image.GestureRecognizers>
+                                                </Image>
+                                                <Button Text="✕"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DiaryViewModel}}, Path=RemoveImageCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#80000000"
+                                                        TextColor="White"
+                                                        WidthRequest="24"
+                                                        HeightRequest="24"
+                                                        CornerRadius="12"
+                                                        Padding="0"
+                                                        FontSize="10"
+                                                        HorizontalOptions="End"
+                                                        VerticalOptions="Start"
+                                                        Margin="4" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+
+                        <!-- Buttons - View Mode -->
+                        <HorizontalStackLayout HorizontalOptions="End" Spacing="8" IsVisible="{Binding IsViewMode}">
+                            <Button Text="Zatvori"
+                                    Command="{Binding CancelEditorCommand}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                    CornerRadius="8"
+                                    Padding="20,12" />
+                        </HorizontalStackLayout>
+
+                        <!-- Buttons - Edit Mode -->
+                        <HorizontalStackLayout HorizontalOptions="End" Spacing="8" IsVisible="{Binding IsViewMode, Converter={StaticResource InvertedBoolConverter}}">
                             <Button Text="Otkaži"
                                     Command="{Binding CancelEditorCommand}"
                                     BackgroundColor="{AppThemeBinding Light={StaticResource CardSecondaryLight}, Dark={StaticResource CardSecondaryDark}}"
@@ -356,7 +558,14 @@
                                     BackgroundColor="#1B5E20"
                                     TextColor="White"
                                     CornerRadius="8"
-                                    Padding="20,12" />
+                                    Padding="20,12">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding EditorTitle.Length}" Value="0">
+                                        <Setter Property="Opacity" Value="0.5" />
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </ScrollView>

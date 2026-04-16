@@ -258,7 +258,17 @@ public partial class CalendarViewModel : BaseViewModel
     private string _fishQuantity = string.Empty;
 
     [ObservableProperty]
+    private string _fishWeight = string.Empty;
+
+    [ObservableProperty]
+    private bool _useQuantity = true;
+
+    [ObservableProperty]
     private ObservableCollection<string> _filteredFishTypes = [];
+
+    // Slike
+    [ObservableProperty]
+    private ObservableCollection<string> _diaryImages = [];
 
     // Location
     [ObservableProperty]
@@ -509,10 +519,13 @@ public partial class CalendarViewModel : BaseViewModel
         DiaryCaughtFish.Clear();
         SelectedFishType = null;
         FishQuantity = string.Empty;
+        FishWeight = string.Empty;
+        UseQuantity = true;
         DiaryLocationName = string.Empty;
         DiaryLatitude = null;
         DiaryLongitude = null;
         DiaryHasLocation = false;
+        DiaryImages.Clear();
         IsDiaryEditorOpen = true;
     }
 
@@ -523,15 +536,27 @@ public partial class CalendarViewModel : BaseViewModel
 
         var caught = new CaughtFish { FishName = SelectedFishType };
 
-        if (int.TryParse(FishQuantity, out var qty))
+        if (UseQuantity)
         {
-            caught.Quantity = qty;
+            if (int.TryParse(FishQuantity, out var qty))
+            {
+                caught.Quantity = qty;
+            }
+        }
+        else
+        {
+            if (double.TryParse(FishWeight.Replace(',', '.'), System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var weight))
+            {
+                caught.WeightKg = weight;
+            }
         }
 
         DiaryCaughtFish.Add(new CaughtFishEditorItem(caught));
 
         SelectedFishType = null;
         FishQuantity = string.Empty;
+        FishWeight = string.Empty;
     }
 
     [RelayCommand]
@@ -555,7 +580,8 @@ public partial class CalendarViewModel : BaseViewModel
             CaughtFish = DiaryCaughtFish.Select(f => f.ToModel()).ToList(),
             Latitude = DiaryLatitude,
             Longitude = DiaryLongitude,
-            LocationName = string.IsNullOrWhiteSpace(DiaryLocationName) ? null : DiaryLocationName
+            LocationName = string.IsNullOrWhiteSpace(DiaryLocationName) ? null : DiaryLocationName,
+            ImagePaths = DiaryImages.ToList()
         };
 
         await _diaryService.AddEntryAsync(entry);
@@ -624,6 +650,111 @@ public partial class CalendarViewModel : BaseViewModel
         DiaryLongitude = null;
         DiaryLocationName = string.Empty;
         DiaryHasLocation = false;
+    }
+
+    [RelayCommand]
+    private async Task AddImageAsync()
+    {
+        try
+        {
+            var action = await Shell.Current.DisplayActionSheet(
+                "Dodaj sliku",
+                "Otkaži",
+                null,
+                "📷 Fotografiši",
+                "🖼️ Izaberi iz galerije");
+
+            if (action == "📷 Fotografiši")
+            {
+                if (!MediaPicker.Default.IsCaptureSupported)
+                {
+                    await Shell.Current.DisplayAlert("Greška", "Kamera nije dostupna na ovom uređaju.", "OK");
+                    return;
+                }
+
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
+                if (photo != null)
+                {
+                    var savedPath = await SaveImageLocallyAsync(photo);
+                    if (!string.IsNullOrEmpty(savedPath))
+                    {
+                        DiaryImages.Add(savedPath);
+                    }
+                }
+            }
+            else if (action == "🖼️ Izaberi iz galerije")
+            {
+                var photo = await MediaPicker.Default.PickPhotoAsync();
+                if (photo != null)
+                {
+                    var savedPath = await SaveImageLocallyAsync(photo);
+                    if (!string.IsNullOrEmpty(savedPath))
+                    {
+                        DiaryImages.Add(savedPath);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Image error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Greška", "Nije moguće dodati sliku.", "OK");
+        }
+    }
+
+    private async Task<string?> SaveImageLocallyAsync(FileResult photo)
+    {
+        try
+        {
+            var imagesDir = Path.Combine(FileSystem.AppDataDirectory, "diary_images");
+            if (!Directory.Exists(imagesDir))
+            {
+                Directory.CreateDirectory(imagesDir);
+            }
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}";
+            var localPath = Path.Combine(imagesDir, fileName);
+
+            using var sourceStream = await photo.OpenReadAsync();
+            using var localFileStream = File.Create(localPath);
+            await sourceStream.CopyToAsync(localFileStream);
+
+            return localPath;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Save image error: {ex.Message}");
+            return null;
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveImage(string? imagePath)
+    {
+        if (!string.IsNullOrEmpty(imagePath) && DiaryImages.Contains(imagePath))
+        {
+            DiaryImages.Remove(imagePath);
+            // Opciono: obriši fajl sa diska
+            try
+            {
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                }
+            }
+            catch { /* ignorišemo greške pri brisanju */ }
+        }
+    }
+
+    [RelayCommand]
+    private async Task PreviewImageAsync(string? imagePath)
+    {
+        if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath)) return;
+
+        await Shell.Current.GoToAsync("ImagePreviewPage", new Dictionary<string, object>
+        {
+            ["ImagePath"] = imagePath
+        });
     }
 
     private async Task BuildCalendarDaysAsync()

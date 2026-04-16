@@ -5,44 +5,38 @@ namespace LetsGoFishing.Services;
 
 /// <summary>
 /// Servis za upravljanje dnevnikom pecanja sa lokalnim skladištenjem.
+/// Koristi Preferences API za pouzdano čuvanje podataka koje preživljava update aplikacije.
 /// </summary>
 public class DiaryService
 {
+    private const string DiaryPreferencesKey = "diary_entries_data";
     private readonly JsonSerializerOptions _jsonOptions;
-    private readonly string _diaryFilePath;
     private List<DiaryEntry> _entries = [];
 
     public DiaryService()
     {
         _jsonOptions = new JsonSerializerOptions
         {
-            WriteIndented = true,
+            WriteIndented = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-
-        // Use AppDataDirectory which persists across app restarts
-        var appDataDir = FileSystem.AppDataDirectory;
-        _diaryFilePath = Path.Combine(appDataDir, "diary.json");
-
-        System.Diagnostics.Debug.WriteLine($"Diary file path: {_diaryFilePath}");
     }
 
-    public async Task LoadEntriesAsync()
+    public Task LoadEntriesAsync()
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine($"Loading diary from: {_diaryFilePath}");
+            var json = Preferences.Get(DiaryPreferencesKey, string.Empty);
 
-            if (File.Exists(_diaryFilePath))
+            if (!string.IsNullOrEmpty(json))
             {
-                var json = await File.ReadAllTextAsync(_diaryFilePath);
-                System.Diagnostics.Debug.WriteLine($"Diary JSON loaded: {json.Length} chars");
+                System.Diagnostics.Debug.WriteLine($"Diary JSON loaded from Preferences: {json.Length} chars");
                 _entries = JsonSerializer.Deserialize<List<DiaryEntry>>(json, _jsonOptions) ?? [];
                 System.Diagnostics.Debug.WriteLine($"Diary entries loaded: {_entries.Count}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("Diary file does not exist, starting fresh");
+                System.Diagnostics.Debug.WriteLine("No diary data in Preferences, starting fresh");
                 _entries = [];
             }
         }
@@ -51,28 +45,24 @@ public class DiaryService
             System.Diagnostics.Debug.WriteLine($"Diary load error: {ex.Message}\n{ex.StackTrace}");
             _entries = [];
         }
+
+        return Task.CompletedTask;
     }
 
-    private async Task SaveEntriesAsync()
+    private Task SaveEntriesAsync()
     {
         try
         {
-            // Ensure directory exists
-            var directory = Path.GetDirectoryName(_diaryFilePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-                System.Diagnostics.Debug.WriteLine($"Created directory: {directory}");
-            }
-
             var json = JsonSerializer.Serialize(_entries, _jsonOptions);
-            await File.WriteAllTextAsync(_diaryFilePath, json);
-            System.Diagnostics.Debug.WriteLine($"Diary saved: {_entries.Count} entries, {json.Length} chars");
+            Preferences.Set(DiaryPreferencesKey, json);
+            System.Diagnostics.Debug.WriteLine($"Diary saved to Preferences: {_entries.Count} entries, {json.Length} chars");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Diary save error: {ex.Message}\n{ex.StackTrace}");
         }
+
+        return Task.CompletedTask;
     }
 
     public IReadOnlyList<DiaryEntry> GetAllEntries()
